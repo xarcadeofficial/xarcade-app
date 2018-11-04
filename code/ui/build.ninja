@@ -12,9 +12,16 @@ rule bison
 
 rule jscrypt
  command = bin/jscrypt $out $in
+# command = cat $in > $out
+
+rule cscrypt
+ command = cat $in > $out
+
+rule cat
+ command = cat $in > $out
 
 rule htmlcode
- command = bin/htmlcode $in > $out
+ command = bin/htmlcode $in $out
 
 rule node
  command = node $in > $out
@@ -25,9 +32,13 @@ build tmp/htmlcode.tab.cc.o: cc tmp/htmlcode.tab.cc
 build tmp/htmlcode.cc.o: cc tmp/htmlcode.cc | tmp/htmlcode.tab.hh
 build tmp/htmlcode.cc: re2c src/htmlcode.cc
 build tmp/htmlcode.tab.cc | tmp/htmlcode.tab.hh: bison src/htmlcode.y
-build tmp/app.body.js: htmlcode input/app.html | bin/htmlcode
-build output/app.js: jscrypt input/app.head.js tmp/app.body.js input/app.tail.js | bin/jscrypt
-build output/app.node.js: jscrypt input/app.head.js tmp/app.body.js input/app.tail-node.js | bin/jscrypt
+build tmp/app.body.js: htmlcode tmp/app.c | bin/htmlcode
+build tmp/app.body-node.js: htmlcode tmp/app.node.c | bin/htmlcode
+build tmp/app.c: cat input/app.fw.c input/app.c input/app.tail.c
+build tmp/app.node.c: cat input/app.fw.c input/app.c input/app.tail-node.c
+build output/app.js: jscrypt input/app.head.js tmp/app.body.js | bin/jscrypt
+build output/app.node.js: jscrypt input/app.head.js tmp/app.body-node.js | bin/jscrypt
 build output/app.html: node output/app.node.js
+build output/app.css: cscrypt input/app.css
 build tmp/jscrypt.cc.o: cc tmp/jscrypt.cc
 build tmp/jscrypt.cc: re2c src/jscrypt.cc

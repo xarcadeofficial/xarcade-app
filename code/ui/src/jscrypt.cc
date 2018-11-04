@@ -25,10 +25,10 @@ int main(int argc, char **argv) {
 			auto c = *(in ++);
 			if(c == 0) {
 				break;
-			} else if(c == ':' && isalnum(in[0])) {
+			} else if(c == ':' && in[0] == '`' && isalnum(in[1])) {
 				char str[128];
 				int l = 1;
-				str[0] = in[0];
+				str[0] = (++ in)[0];
 				while(true) {
 					c = *(++ in);
 					if(isalnum(c) || c == '_' || c == '-') {
@@ -37,27 +37,33 @@ int main(int argc, char **argv) {
 						break;
 					}
 				}
-				if(c == '(') {
-					if(in[1] == ':' && in[2] == ')') {
-						in += 3;
+				if(c == '`') {
+					c = *(++ in);
+					if(c == '(') {
+						if(in[1] == ':' && in[2] == ')') {
+							in += 3;
+						}
+						str[l ++] = '(';
 					}
-					str[l ++] = '(';
-				}
-				str[l] = 0;
-				int i;
-				for(i = strc - 1; i >= 0; i --) {
-					if(strl[i] == l && memcmp(strv[i], str, l) == 0) {
-						break;
+					str[l] = 0;
+					int i;
+					for(i = strc - 1; i >= 0; i --) {
+						if(strl[i] == l && memcmp(strv[i], str, l) == 0) {
+							break;
+						}
 					}
-				}
-				if(i == -1) {
-					strl[strc] = l;
-					auto s = strv[strc] = (char*)malloc(l + 1);
-					memcpy(s, str, l + 1);
-					fprintf(out, "X%dX", strc ^ mask);
-					strc ++;
+					if(i == -1) {
+						strl[strc] = l;
+						auto s = strv[strc] = (char*)malloc(l + 1);
+						memcpy(s, str, l + 1);
+						fprintf(out, "X%dX", strc ^ mask);
+						strc ++;
+					} else {
+						fprintf(out, "X%dX", i ^ mask);
+					}
 				} else {
-					fprintf(out, "X%dX", i ^ mask);
+					str[l] = 0;
+					fprintf(out, ":`%s", str);
 				}
 			} else {
 				fputc(c, out);
