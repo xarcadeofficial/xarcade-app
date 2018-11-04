@@ -1,0 +1,4 @@
+ui - presentation tier of the app's front-end
+logic - logic tier of the app's front-end
+hlbl - high-level business logic tier of the app's back-end
+dbbl - database and low-level business logic tier of the app's back-end

@@ -1,0 +1,33 @@
+rule cc
+ command = clang++ -I src -I tmp -c $in -o $out
+
+rule ld
+ command = clang++ $in -o $out
+
+rule re2c
+ command = re2c -o $out $in
+
+rule bison
+ command = bison -Werror -d $in -o $out
+
+rule jscrypt
+ command = bin/jscrypt $out $in
+
+rule htmlcode
+ command = bin/htmlcode $in > $out
+
+rule node
+ command = node $in > $out
+
+build bin/htmlcode: ld tmp/htmlcode.cc.o tmp/htmlcode.tab.cc.o
+build bin/jscrypt: ld tmp/jscrypt.cc.o
+build tmp/htmlcode.tab.cc.o: cc tmp/htmlcode.tab.cc
+build tmp/htmlcode.cc.o: cc tmp/htmlcode.cc | tmp/htmlcode.tab.hh
+build tmp/htmlcode.cc: re2c src/htmlcode.cc
+build tmp/htmlcode.tab.cc | tmp/htmlcode.tab.hh: bison src/htmlcode.y
+build tmp/app.body.js: htmlcode input/app.html | bin/htmlcode
+build output/app.js: jscrypt input/app.head.js tmp/app.body.js input/app.tail.js | bin/jscrypt
+build output/app.node.js: jscrypt input/app.head.js tmp/app.body.js input/app.tail-node.js | bin/jscrypt
+build output/app.html: node output/app.node.js
+build tmp/jscrypt.cc.o: cc tmp/jscrypt.cc
+build tmp/jscrypt.cc: re2c src/jscrypt.cc
